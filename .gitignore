@@ -1,0 +1,6 @@
+*.exe
+*.log
+bin/
+obj/
+.vs/
+config.local.json
