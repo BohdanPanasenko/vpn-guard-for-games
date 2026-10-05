@@ -9,7 +9,7 @@ namespace VpnGuardForGames
 
         readonly Timer pollTimer = new Timer { Interval = 500 };
 
-        public VpnPrompt()
+        public VpnPrompt(Settings settings)
         {
             Text = Title;
             Font = SystemFonts.MessageBoxFont;
@@ -45,10 +45,10 @@ namespace VpnGuardForGames
             CancelButton = cancel;
 
             Button openClient = null;
-            if (VpnClient.IsRunning())
+            if (VpnClient.IsRunning(settings.Client))
             {
-                openClient = CreateButton("Open NordLayer", DialogResult.None);
-                openClient.Click += delegate { VpnClient.Open(); };
+                openClient = CreateButton("Open " + settings.Client, DialogResult.None);
+                openClient.Click += delegate { VpnClient.Open(settings.Client); };
                 buttons.Controls.Add(openClient);
             }
 
@@ -65,7 +65,7 @@ namespace VpnGuardForGames
 
             pollTimer.Tick += delegate
             {
-                if (!Vpn.IsConnected())
+                if (!Vpn.IsConnected(settings.Adapters))
                 {
                     DialogResult = DialogResult.OK;
                 }

@@ -10,8 +10,6 @@ namespace VpnGuardForGames
 {
     static class VpnClient
     {
-        const string ProcessName = "NordLayer";
-        const string MainWindowTitle = "NordLayer";
         const string TrayIconWindowClassPrefix = "WPFTaskbarIcon_";
         const uint TrayCallbackMessage = 0x400;
         const int LeftButtonDown = 0x201;
@@ -44,14 +42,14 @@ namespace VpnGuardForGames
         [DllImport("user32.dll")]
         static extern bool SetForegroundWindow(IntPtr window);
 
-        public static bool IsRunning()
+        public static bool IsRunning(string client)
         {
-            return Process.GetProcessesByName(ProcessName).Length > 0;
+            return !string.IsNullOrEmpty(client) && Process.GetProcessesByName(client).Length > 0;
         }
 
-        public static void Open()
+        public static void Open(string client)
         {
-            IntPtr trayIcon = FindClientWindow(window => GetClassName(window).StartsWith(TrayIconWindowClassPrefix));
+            IntPtr trayIcon = FindClientWindow(client, window => GetClassName(window).StartsWith(TrayIconWindowClassPrefix));
             if (trayIcon == IntPtr.Zero)
             {
                 return;
@@ -68,7 +66,7 @@ namespace VpnGuardForGames
             bringToFront.Tick += delegate
             {
                 bringToFront.Dispose();
-                IntPtr mainWindow = FindClientWindow(window => IsWindowVisible(window) && GetWindowText(window) == MainWindowTitle);
+                IntPtr mainWindow = FindClientWindow(client, window => IsWindowVisible(window) && GetWindowText(window) == client);
                 if (mainWindow != IntPtr.Zero)
                 {
                     SetForegroundWindow(mainWindow);
@@ -77,9 +75,9 @@ namespace VpnGuardForGames
             bringToFront.Start();
         }
 
-        static IntPtr FindClientWindow(Func<IntPtr, bool> matches)
+        static IntPtr FindClientWindow(string client, Func<IntPtr, bool> matches)
         {
-            var processIds = new HashSet<uint>(Process.GetProcessesByName(ProcessName).Select(process => (uint)process.Id));
+            var processIds = new HashSet<uint>(Process.GetProcessesByName(client).Select(process => (uint)process.Id));
             IntPtr found = IntPtr.Zero;
 
             EnumWindows((window, parameter) =>

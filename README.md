@@ -29,10 +29,22 @@ vpnguard stays running until the game exits, so Steam still tracks playtime corr
 
 The same line works for any Steam game (Dota 2, Rainbow Six Siege, ...). For non-Steam games, point a desktop shortcut at `vpnguard.exe "C:\path\to\game.exe"`.
 
+## Settings
+
+`build.cmd` puts a `config.ini` next to `vpnguard.exe` (only the first time, so your edits survive rebuilds). Changes apply on the next game launch.
+
+| Setting | Default | Meaning |
+|---|---|---|
+| `adapters` | `NordLayer` | Comma-separated words; any network adapter whose description contains one of them counts as "VPN connected" |
+| `client` | `NordLayer` | VPN app opened by the "Open ..." button; leave empty to hide the button |
+| `mode` | `ask` | `ask` waits until the VPN is off (or you click "Play anyway"); `warn` starts the game right away and shows a short reminder in the corner |
+
+Double-clicking `vpnguard.exe` shows the current VPN status, mode and settings path.
+
 ## Roadmap
 
-- [ ] v1: detect VPN + prompt, then launch the game
-- [ ] Config file: per-mode behaviour (always ask / silent)
+- [x] v1: detect VPN + prompt, then launch the game
+- [x] Config file: per-mode behaviour (always ask / silent)
 - [ ] v2: automatic disconnect (NordLayer has no CLI; needs investigation)
 - [ ] Offer to reconnect after the game exits
 - [ ] Background watcher mode for non-Steam games

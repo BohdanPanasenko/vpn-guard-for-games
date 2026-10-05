@@ -6,18 +6,14 @@ namespace VpnGuardForGames
 {
     static class GameLauncher
     {
-        public static int Run(string commandLine)
+        public static Process Start(string commandLine)
         {
             string arguments;
             string fileName = CommandLine.SplitFirstToken(commandLine, out arguments);
 
             try
             {
-                using (var game = Process.Start(new ProcessStartInfo(fileName, arguments) { UseShellExecute = false }))
-                {
-                    game.WaitForExit();
-                    return game.ExitCode;
-                }
+                return Process.Start(new ProcessStartInfo(fileName, arguments) { UseShellExecute = false });
             }
             catch (Exception error)
             {
@@ -26,7 +22,7 @@ namespace VpnGuardForGames
                     VpnPrompt.Title,
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
-                return 1;
+                return null;
             }
         }
     }

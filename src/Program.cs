@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -16,18 +17,22 @@ namespace VpnGuardForGames
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
+            var settings = Settings.Load();
+
             string gameCommandLine;
             CommandLine.SplitFirstToken(Environment.CommandLine, out gameCommandLine);
 
             if (gameCommandLine.Length == 0)
             {
-                ShowStatus();
+                ShowStatus(settings);
                 return 0;
             }
 
-            if (Vpn.IsConnected())
+            bool vpnConnected = Vpn.IsConnected(settings.Adapters);
+
+            if (vpnConnected && settings.Mode == PromptMode.Ask)
             {
-                using (var prompt = new VpnPrompt())
+                using (var prompt = new VpnPrompt(settings))
                 {
                     if (prompt.ShowDialog() != DialogResult.OK)
                     {
@@ -36,14 +41,32 @@ namespace VpnGuardForGames
                 }
             }
 
-            return GameLauncher.Run(gameCommandLine);
+            Process game = GameLauncher.Start(gameCommandLine);
+            if (game == null)
+            {
+                return 1;
+            }
+
+            using (game)
+            {
+                if (vpnConnected && settings.Mode == PromptMode.Warn)
+                {
+                    Application.Run(new VpnReminder());
+                }
+
+                game.WaitForExit();
+                return game.ExitCode;
+            }
         }
 
-        static void ShowStatus()
+        static void ShowStatus(Settings settings)
         {
-            string status = Vpn.IsConnected() ? "connected" : "not connected";
+            string status = Vpn.IsConnected(settings.Adapters) ? "connected" : "not connected";
             MessageBox.Show(
-                "VPN is " + status + ".\n\nTo guard a Steam game, set its launch options to:\n\"" + Application.ExecutablePath + "\" %command%",
+                "VPN is " + status + ".\n\n" +
+                "Mode: " + settings.Mode.ToString().ToLowerInvariant() + "\n" +
+                "Settings: " + Settings.FilePath + "\n\n" +
+                "To guard a Steam game, set its launch options to:\n\"" + Application.ExecutablePath + "\" %command%",
                 VpnPrompt.Title,
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);

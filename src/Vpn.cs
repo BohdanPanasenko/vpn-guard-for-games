@@ -6,13 +6,11 @@ namespace VpnGuardForGames
 {
     static class Vpn
     {
-        static readonly string[] AdapterKeywords = { "NordLayer" };
-
-        public static bool IsConnected()
+        public static bool IsConnected(string[] adapterKeywords)
         {
             return NetworkInterface.GetAllNetworkInterfaces().Any(adapter =>
                 adapter.OperationalStatus == OperationalStatus.Up &&
-                AdapterKeywords.Any(keyword => adapter.Description.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0));
+                adapterKeywords.Any(keyword => adapter.Description.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0));
         }
     }
 }

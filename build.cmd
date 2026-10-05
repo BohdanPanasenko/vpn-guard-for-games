@@ -20,7 +20,10 @@ copy /y "%OUT_DIR%\vpnguard.exe" "%INSTALL_DIR%\vpnguard.exe" >nul || (
   exit /b 1
 )
 
+if not exist "%INSTALL_DIR%\config.ini" copy "%~dp0config.ini" "%INSTALL_DIR%\config.ini" >nul
+
 echo.
 echo [build] Installed to %INSTALL_DIR%\vpnguard.exe
+echo [build] Settings: %INSTALL_DIR%\config.ini
 echo [build] Steam launch options:
 echo   "%INSTALL_DIR%\vpnguard.exe" %%command%%
