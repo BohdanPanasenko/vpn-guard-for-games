@@ -15,7 +15,8 @@ if not exist "%OUT_DIR%" mkdir "%OUT_DIR%"
 
 if not exist "%INSTALL_DIR%" mkdir "%INSTALL_DIR%"
 copy /y "%OUT_DIR%\vpnguard.exe" "%INSTALL_DIR%\vpnguard.exe" >nul || (
-  echo [build] Could not copy to %INSTALL_DIR%. Is a guarded game still running?
+  echo [build] Could not copy to %INSTALL_DIR%: vpnguard.exe is still running.
+  echo [build] Close its dialog or the game it launched, or run: Stop-Process -Name vpnguard
   exit /b 1
 )
 
