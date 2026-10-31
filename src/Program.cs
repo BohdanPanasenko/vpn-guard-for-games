@@ -59,7 +59,7 @@ namespace VpnGuardForGames
                     Application.Run(new VpnReminder(VpnReminder.BeforeLaunchText));
                 }
 
-                GameLauncher.WaitUntilClosed(game);
+                game.WaitForExit();
                 exitCode = game.ExitCode;
             }
 

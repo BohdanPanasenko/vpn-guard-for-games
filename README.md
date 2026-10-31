@@ -30,8 +30,6 @@ vpnguard stays running until the game exits, so Steam still tracks playtime corr
 
 When the game closes, if you turned the VPN off for it, vpnguard reminds you to turn it back on. Sessions shorter than a minute are ignored, so games that start through a separate launcher don't trigger the reminder straight away. This setting be turned off completely if you do not wish to get this reminder or put into either ask or warn mode.
 
-Many games (Hunt included) are started through a small anti-cheat launcher that opens the real game and exits. vpnguard therefore treats the game as running for as long as any program from the game's folder is running, and waits up to 10 seconds after the launcher exits for the game to appear.
-
 The same line works for any Steam game (Dota 2, Rainbow Six Siege, ...). For non-Steam games, point a desktop shortcut at `vpnguard.exe "C:\path\to\game.exe"`.
 
 ## Settings
