@@ -28,6 +28,8 @@ When you press Play:
 
 vpnguard stays running until the game exits, so Steam still tracks playtime correctly.
 
+When the game closes, if you turned the VPN off for it, vpnguard reminds you to turn it back on. Sessions shorter than a minute are ignored, so games that start through a separate launcher don't trigger the reminder straight away. This setting be turned off completely if you do not wish to get this reminder or put into either ask or warn mode.
+
 The same line works for any Steam game (Dota 2, Rainbow Six Siege, ...). For non-Steam games, point a desktop shortcut at `vpnguard.exe "C:\path\to\game.exe"`.
 
 ## Settings
@@ -38,9 +40,10 @@ The same line works for any Steam game (Dota 2, Rainbow Six Siege, ...). For non
 |---|---|---|
 | `adapters` | `NordLayer` | Comma-separated words; any network adapter whose description contains one of them counts as "VPN connected" |
 | `client` | `NordLayer` | VPN app opened by the "Open ..." button; leave empty to hide the button |
-| `mode` | `ask` | `ask` waits until the VPN is off (or you click "Play anyway"); `warn` starts the game right away and shows a short reminder in the corner |
+| `mode` | `ask` | Before launch, if the VPN is on. `off`: do nothing; `ask`: wait until the VPN is off (or you click "Play anyway"); `warn`: start the game right away and show a short reminder in the corner |
+| `reconnect` | `ask` | After the game closes, if you turned the VPN off for it. `off`: do nothing; `ask`: dialog that closes by itself once the VPN is back on; `warn`: short reminder in the corner |
 
-Double-clicking `vpnguard.exe` shows the current VPN status, mode and settings path.
+Double-clicking `vpnguard.exe` shows the current VPN status, both modes and the settings path.
 
 ## Roadmap
 

@@ -13,7 +13,10 @@ namespace VpnGuardForGames
 
         readonly Timer closeTimer = new Timer { Interval = VisibleMs };
 
-        public VpnReminder()
+        public const string BeforeLaunchText = "Your VPN is connected, expect high ping.";
+        public const string AfterExitText = "The game has closed. Don't forget to turn your VPN back on.";
+
+        public VpnReminder(string text)
         {
             FormBorderStyle = FormBorderStyle.None;
             ShowInTaskbar = false;
@@ -30,7 +33,7 @@ namespace VpnGuardForGames
             {
                 AutoSize = true,
                 Margin = Padding.Empty,
-                Text = "Your VPN is connected, expect high ping.\nClick to dismiss."
+                Text = text + "\nClick to dismiss."
             };
             message.Click += delegate { Close(); };
             Click += delegate { Close(); };

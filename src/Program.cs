@@ -7,6 +7,8 @@ namespace VpnGuardForGames
 {
     static class Program
     {
+        static readonly TimeSpan MinimumPlayTimeForReconnect = TimeSpan.FromMinutes(1);
+
         [DllImport("user32.dll")]
         static extern bool SetProcessDPIAware();
 
@@ -28,11 +30,11 @@ namespace VpnGuardForGames
                 return 0;
             }
 
-            bool vpnConnected = Vpn.IsConnected(settings.Adapters);
+            bool vpnConnectedAtLaunch = Vpn.IsConnected(settings.Adapters);
 
-            if (vpnConnected && settings.Mode == PromptMode.Ask)
+            if (vpnConnectedAtLaunch && settings.Mode == ReminderMode.Ask)
             {
-                using (var prompt = new VpnPrompt(settings))
+                using (var prompt = VpnPrompt.BeforeLaunch(settings))
                 {
                     if (prompt.ShowDialog() != DialogResult.OK)
                     {
@@ -47,15 +49,41 @@ namespace VpnGuardForGames
                 return 1;
             }
 
+            var playTime = Stopwatch.StartNew();
+            int exitCode;
+
             using (game)
             {
-                if (vpnConnected && settings.Mode == PromptMode.Warn)
+                if (vpnConnectedAtLaunch && settings.Mode == ReminderMode.Warn)
                 {
-                    Application.Run(new VpnReminder());
+                    Application.Run(new VpnReminder(VpnReminder.BeforeLaunchText));
                 }
 
                 game.WaitForExit();
-                return game.ExitCode;
+                exitCode = game.ExitCode;
+            }
+
+            if (vpnConnectedAtLaunch && playTime.Elapsed >= MinimumPlayTimeForReconnect && !Vpn.IsConnected(settings.Adapters))
+            {
+                RemindToReconnect(settings);
+            }
+
+            return exitCode;
+        }
+
+        static void RemindToReconnect(Settings settings)
+        {
+            if (settings.Reconnect == ReminderMode.Ask)
+            {
+                using (var prompt = VpnPrompt.AfterExit(settings))
+                {
+                    prompt.ShowDialog();
+                }
+            }
+
+            if (settings.Reconnect == ReminderMode.Warn)
+            {
+                Application.Run(new VpnReminder(VpnReminder.AfterExitText));
             }
         }
 
@@ -64,7 +92,8 @@ namespace VpnGuardForGames
             string status = Vpn.IsConnected(settings.Adapters) ? "connected" : "not connected";
             MessageBox.Show(
                 "VPN is " + status + ".\n\n" +
-                "Mode: " + settings.Mode.ToString().ToLowerInvariant() + "\n" +
+                "Before launch: " + settings.Mode.ToString().ToLowerInvariant() + "\n" +
+                "Reconnect reminder: " + settings.Reconnect.ToString().ToLowerInvariant() + "\n" +
                 "Settings: " + Settings.FilePath + "\n\n" +
                 "To guard a Steam game, set its launch options to:\n\"" + Application.ExecutablePath + "\" %command%",
                 VpnPrompt.Title,

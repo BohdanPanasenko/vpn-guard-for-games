@@ -1,3 +1,4 @@
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -9,7 +10,27 @@ namespace VpnGuardForGames
 
         readonly Timer pollTimer = new Timer { Interval = 500 };
 
-        public VpnPrompt(Settings settings)
+        public static VpnPrompt BeforeLaunch(Settings settings)
+        {
+            return new VpnPrompt(
+                settings.Client,
+                "Your VPN is connected.\n\nDisconnect it and the game will start automatically.",
+                "Play anyway",
+                "Cancel",
+                () => !Vpn.IsConnected(settings.Adapters));
+        }
+
+        public static VpnPrompt AfterExit(Settings settings)
+        {
+            return new VpnPrompt(
+                settings.Client,
+                "The game has closed and your VPN is still off.\n\nTurn it back on so you don't forget later.",
+                null,
+                "Not now",
+                () => Vpn.IsConnected(settings.Adapters));
+        }
+
+        VpnPrompt(string client, string text, string continueLabel, string cancelLabel, Func<bool> isResolved)
         {
             Text = Title;
             Font = SystemFonts.MessageBoxFont;
@@ -27,7 +48,7 @@ namespace VpnGuardForGames
                 AutoSize = true,
                 MaximumSize = new Size(380, 0),
                 Margin = new Padding(0, 0, 0, 16),
-                Text = "Your VPN is connected.\n\nDisconnect it and the game will start automatically."
+                Text = text
             };
 
             var buttons = new FlowLayoutPanel
@@ -38,17 +59,20 @@ namespace VpnGuardForGames
                 Margin = Padding.Empty
             };
 
-            var cancel = CreateButton("Cancel", DialogResult.Cancel);
-            var playAnyway = CreateButton("Play anyway", DialogResult.OK);
+            var cancel = CreateButton(cancelLabel, DialogResult.Cancel);
             buttons.Controls.Add(cancel);
-            buttons.Controls.Add(playAnyway);
             CancelButton = cancel;
 
-            Button openClient = null;
-            if (VpnClient.IsRunning(settings.Client))
+            if (continueLabel != null)
             {
-                openClient = CreateButton("Open " + settings.Client, DialogResult.None);
-                openClient.Click += delegate { VpnClient.Open(settings.Client); };
+                buttons.Controls.Add(CreateButton(continueLabel, DialogResult.OK));
+            }
+
+            Button openClient = null;
+            if (VpnClient.IsRunning(client))
+            {
+                openClient = CreateButton("Open " + client, DialogResult.None);
+                openClient.Click += delegate { VpnClient.Open(client); };
                 buttons.Controls.Add(openClient);
             }
 
@@ -61,11 +85,11 @@ namespace VpnGuardForGames
             layout.Controls.Add(message);
             layout.Controls.Add(buttons);
             Controls.Add(layout);
-            ActiveControl = openClient ?? playAnyway;
+            ActiveControl = openClient ?? buttons.Controls[buttons.Controls.Count - 1];
 
             pollTimer.Tick += delegate
             {
-                if (!Vpn.IsConnected(settings.Adapters))
+                if (isResolved())
                 {
                     DialogResult = DialogResult.OK;
                 }

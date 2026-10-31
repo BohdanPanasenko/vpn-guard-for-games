@@ -4,8 +4,9 @@ using System.Linq;
 
 namespace VpnGuardForGames
 {
-    enum PromptMode
+    enum ReminderMode
     {
+        Off,
         Ask,
         Warn
     }
@@ -14,7 +15,8 @@ namespace VpnGuardForGames
     {
         public string[] Adapters = { "NordLayer" };
         public string Client = "NordLayer";
-        public PromptMode Mode = PromptMode.Ask;
+        public ReminderMode Mode = ReminderMode.Ask;
+        public ReminderMode Reconnect = ReminderMode.Ask;
 
         public static string FilePath
         {
@@ -50,12 +52,30 @@ namespace VpnGuardForGames
                         settings.Client = value;
                         break;
                     case "mode":
-                        settings.Mode = value.Equals("warn", StringComparison.OrdinalIgnoreCase) ? PromptMode.Warn : PromptMode.Ask;
+                        settings.Mode = ParseMode(value, settings.Mode);
+                        break;
+                    case "reconnect":
+                        settings.Reconnect = ParseMode(value, settings.Reconnect);
                         break;
                 }
             }
 
             return settings;
+        }
+
+        static ReminderMode ParseMode(string value, ReminderMode fallback)
+        {
+            switch (value.ToLowerInvariant())
+            {
+                case "off":
+                    return ReminderMode.Off;
+                case "ask":
+                    return ReminderMode.Ask;
+                case "warn":
+                    return ReminderMode.Warn;
+                default:
+                    return fallback;
+            }
         }
     }
 }
